@@ -47,7 +47,7 @@ def get_parser() -> argparse.ArgumentParser:
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument(
         "--format",
-        "-f", 
+        "-f",
         help=f"dataframe output format (default is '{FORMAT_DEFAULT}')",
         default=FORMAT_DEFAULT,
         choices=FORMAT_CHOICES
@@ -76,7 +76,7 @@ def get_parser() -> argparse.ArgumentParser:
         type=str,
         default=DAYS_FORMAT_DEFAULT,
     )
-    
+
     # setup main parser, inheriting from parent parser
     parser = argparse.ArgumentParser(
         description='output timewarrior data as a pandas dataframe',
@@ -93,9 +93,9 @@ def get_parser() -> argparse.ArgumentParser:
     # groupby subcommand, inheriting from parent parser
     subcommand = "groupby"
     subparsers[subcommand] = groupby = _subparsers.add_parser(
-        subcommand, 
+        subcommand,
         description="group timewarrior data by a column",
-        help="group by a column", 
+        help="group by a column",
         parents=[parent_parser],
         epilog=GROUPBY_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -120,13 +120,13 @@ def main_cli():
             file=sys.stderr
         )
         return None
-    
+
     df = args.func(args)
     print(
         format_dataframe(
-            df, 
-            fmt=args.format, 
-            hours_format=args.hours_format, 
-            days_format=args.days_format
+            df,
+            fmt=args.format,
+            hours_format=args.hours_format,
+            days_format=args.days_format,
         )
     )
