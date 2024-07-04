@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "twdf"
+version = "0.1"
+authors = [{name="Alex Lyttle", email="43786145+alexlyttle@users.noreply.github.com" }]
+description = "Timewarrior DataFrame"
+readme = "README.md"
+dependencies = ["pandas","timew-report"]
+requires-python = ">=3.9"
+
+[project.scripts]
+twdf = "twdf.twdf:main_cli"
