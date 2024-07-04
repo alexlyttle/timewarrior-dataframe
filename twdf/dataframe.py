@@ -3,14 +3,13 @@ import pandas as pd
 from timewreport.parser import TimeWarriorParser, TimeWarriorInterval
 from typing import TextIO
 
-hours_per_day = 7.5
 seconds_per_hour = 3600
 
 def get_intervals(input_stream: TextIO) -> list[TimeWarriorInterval]:
     """Get Timewarrior intervals from input stream."""
     return TimeWarriorParser._TimeWarriorParser__parse_intervals_section(input_stream)
 
-def get_data(intervals: list[TimeWarriorInterval]) -> dict:
+def get_data(intervals: list[TimeWarriorInterval], hours_per_day: float) -> dict:
     """Get data from the Timewarrior intervals."""    
     data = dict(
         Date=[],
@@ -36,8 +35,8 @@ def create_dataframe(data: dict) -> pd.DataFrame:
     df = df.set_index(["Week", "Date", "Weekday"], drop=True)
     return df
 
-def get_dataframe(input_stream: TextIO) -> pd.DataFrame:
+def get_dataframe(input_stream: TextIO, hours_per_day: float) -> pd.DataFrame:
     """Get a pandas DataFrame from the system standard input."""
     intervals = get_intervals(input_stream)
-    data = get_data(intervals)
+    data = get_data(intervals, hours_per_day)
     return create_dataframe(data)

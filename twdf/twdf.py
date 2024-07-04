@@ -5,6 +5,10 @@ from .dataframe import get_dataframe
 from .groupby import aggregate_funcs
 from .formatter import format_dataframe
 
+HOURS_PER_DAY_DEFAULT = 7.5
+HOURS_FORMAT_DEFAULT = ".2f"
+DAYS_FORMAT_DEFAULT = ".3f"
+
 FORMAT_CHOICES = ["table", "csv"]
 FORMAT_DEFAULT = "table"
 
@@ -28,11 +32,11 @@ GROUBY_EPILOG = """examples:
 
 def default_func(args):
     """Return the dataframe from the input file."""
-    return get_dataframe(args.input)
+    return get_dataframe(args.input, args.hours_per_day)
 
 def groupby_func(args):
     """Return the grouped dataframe from the input file."""
-    df = get_dataframe(args.input)
+    df = get_dataframe(args.input, args.hours_per_day)
     by = args.by.capitalize()
     return df.groupby(by).agg(aggregate_funcs(by))
 
@@ -53,6 +57,24 @@ def get_parser() -> argparse.ArgumentParser:
         help="input file (default is system standard input)",
         type=argparse.FileType("r"),
         default=sys.stdin,
+    )
+    parent_parser.add_argument(
+        "--hours-per-day",
+        help=f"hours per day (default is {HOURS_PER_DAY_DEFAULT})",
+        type=float,
+        default=HOURS_PER_DAY_DEFAULT,
+    )
+    parent_parser.add_argument(
+        "--hours-format",
+        help=f"string format to display hours (default is '{HOURS_FORMAT_DEFAULT}')",
+        type=str,
+        default=HOURS_FORMAT_DEFAULT,
+    )
+    parent_parser.add_argument(
+        "--days-format",
+        help=f"string format to display days (default is '{DAYS_FORMAT_DEFAULT}')",
+        type=str,
+        default=DAYS_FORMAT_DEFAULT,
     )
     
     # setup main parser, inheriting from parent parser
@@ -100,4 +122,11 @@ def main_cli():
         return None
     
     df = args.func(args)
-    print(format_dataframe(df, fmt=args.format))
+    print(
+        format_dataframe(
+            df, 
+            fmt=args.format, 
+            hours_format=args.hours_format, 
+            days_format=args.days_format
+        )
+    )

@@ -1,12 +1,12 @@
 import pandas as pd
 
-formatters = {
-    "Hours": "{:.2f}".format,
-    "Days": "{:.3f}".format,
-}
 
-def format_dataframe(df: pd.DataFrame, fmt) -> str:
+def format_dataframe(df: pd.DataFrame, fmt: str, hours_format: str, days_format: str) -> str:
     """Format the DataFrame."""
+    formatters = {
+        "Hours": f"{{:{hours_format}}}".format,
+        "Days": f"{{:{days_format}}}".format,
+    }
     if fmt == "csv":
         return df.to_csv()
     elif fmt == "table":
