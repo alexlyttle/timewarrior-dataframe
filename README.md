@@ -36,9 +36,16 @@ timew export | twdf --format csv
 
 ### Input
 
-By default, the `twdf` command expects input JSON data from the system standard input. If the output of `timew export` has been saved to a file elsewhere, e.g. `report.json`, then you can redirect the file contents with `<` or use the `--input` option.
+By default, the `twdf` command expects input JSON data from the system standard input (e.g. using the `|` operator).
+If the output of `timew export` has been saved to a file elsewhere, then you can redirect the file contents with `<` operator or by using the `--input` option.
 
-For example, the following commands are equivalent,
+For example, if you have saved Timewarrior data with the following command,
+
+```bash
+timew export > report.json
+```
+
+you can direct the contents of this file to `twdf` with either of the following commands,
 
 ```bash
 twdf < report.json
