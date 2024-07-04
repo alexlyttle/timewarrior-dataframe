@@ -26,8 +26,8 @@ EPILOG = """examples:
   twdf --input report.json          # using the --input argument
 """
 
-GROUBY_EPILOG = """examples:
-  timew export | twdf grouby tags   # print dataframe grouped by tags
+GROUPBY_EPILOG = """examples:
+  timew export | twdf groupby tags   # print dataframe grouped by tags
 """
 
 def default_func(args):
@@ -97,7 +97,7 @@ def get_parser() -> argparse.ArgumentParser:
         description="group timewarrior data by a column",
         help="group by a column", 
         parents=[parent_parser],
-        epilog=GROUBY_EPILOG,
+        epilog=GROUPBY_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     groupby.set_defaults(func=groupby_func)
