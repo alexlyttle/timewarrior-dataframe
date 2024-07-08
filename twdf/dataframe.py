@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import pandas as pd
 from timewreport.parser import TimeWarriorParser, TimeWarriorInterval
 from typing import TextIO
