@@ -12,7 +12,7 @@ DAYS_FORMAT_DEFAULT = ".3f"
 FORMAT_CHOICES = ["table", "csv"]
 FORMAT_DEFAULT = "table"
 
-BY_CHOICES = ["tags", "date", "week"]
+BY_CHOICES = ["tags", "date", "week", "weekday"]
 
 EPILOG = """examples:
   timew export | twdf               # print dataframe for all timewarrior data
@@ -38,7 +38,7 @@ def groupby_func(args):
     """Return the grouped dataframe from the input file."""
     df = get_dataframe(args.input, args.hours_per_day)
     by = args.by.capitalize()
-    return df.groupby(by).agg(aggregate_funcs(by))
+    return df.groupby(by, sort=False).agg(aggregate_funcs(by))
 
 def get_parser() -> argparse.ArgumentParser:
     """Return the parser for the command line interface."""
@@ -102,6 +102,7 @@ def get_parser() -> argparse.ArgumentParser:
     )
     groupby.set_defaults(func=groupby_func)
     groupby.add_argument("by", help="column to group by", choices=BY_CHOICES)
+    groupby.add_argument("--hide-tags", help="hide tags in the output", action="store_true")
 
     return (parser, subparsers)
 

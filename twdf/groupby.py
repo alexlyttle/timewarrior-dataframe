@@ -30,6 +30,13 @@ def aggregate_funcs(by: str) -> dict:
             "Days": "sum"
         }
     
+    elif by == "Weekday":
+        funcs = {
+            "Tags": join_tags,
+            "Hours": "sum",
+            "Days": "sum"
+        }
+
     else:
         raise ValueError("Unknown groupby column.")
     
