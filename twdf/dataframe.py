@@ -29,7 +29,7 @@ def get_data(intervals: list[TimeWarriorInterval], hours_per_day: float) -> dict
 def create_dataframe(data: dict) -> pd.DataFrame:
     """Create a pandas DataFrame from the data."""
     df = pd.DataFrame(data)
-    df["Week"] = df.Date.apply(lambda x: x.strftime("W%W"))
+    df["Week"] = df.Date.apply(lambda x: x.strftime("%W")).astype(int)
     df["Weekday"] = df.Date.apply(lambda x: x.strftime("%a"))
     df = df.set_index(["Week", "Date", "Weekday"], drop=True)
     return df
