@@ -14,11 +14,18 @@ def get_data(intervals: list[TimeWarriorInterval], hours_per_day: float) -> dict
     data = defaultdict(list)
 
     for interval in intervals:
-        data["Date"].append(interval.get_start_date())
-        data["Tags"].append(", ".join(interval.get_tags()))
-        data["Start"].append(interval.get_start())
-        data["End"].append(interval.get_end())
+        start = interval.get_start()
         
+        data["Start"].append(start)
+        data["End"].append(interval.get_end())  
+        
+        data["Date"].append(start.date())
+        data["Time"].append(start.time())
+        data["Week"].append(int(start.strftime("%W")))
+        data["Weekday"].append(start.strftime("%a"))
+
+        data["Tags"].append(", ".join(interval.get_tags()))
+
         duration = interval.get_duration()
         data["Duration"].append(duration)
         data["Hours"].append(duration.seconds / SECONDS_PER_HOUR)
@@ -34,8 +41,8 @@ def explode(df: pd.DataFrame, column: str, delimiter: str=", ") -> pd.DataFrame:
 def create_dataframe(data: dict, explode_tags: bool=False, index: Optional[list]=None) -> pd.DataFrame:
     """Create a pandas DataFrame from the data."""
     df = pd.DataFrame(data)
-    df["Week"] = df.Date.apply(lambda x: x.strftime("%W")).astype(int)
-    df["Weekday"] = df.Date.apply(lambda x: x.strftime("%a"))
+    # df["Week"] = df.Date.apply(lambda x: x.strftime("%W")).astype(int)
+    # df["Weekday"] = df.Date.apply(lambda x: x.strftime("%a"))
     if explode_tags:
         df = explode(df, "Tags")
     if index is not None:
