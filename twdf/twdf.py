@@ -15,6 +15,9 @@ FORMAT_DEFAULT = "table"
 COLUMNS_CHOICES = ["Tags", "Hours", "Days", "Duration", "Start", "End"]
 COLUMNS_DEFAULT = ["Tags", "Hours", "Days"]
 
+INDEX_DEFAULT = ["Week", "Date", "Weekday"]
+INDEX_CHOICES = ["Tags", "Date", "Week", "Weekday", "Start", "End"]
+
 BY_CHOICES = ["Tags", "Date", "Week", "Weekday"]
 
 EPILOG = """examples:
@@ -35,7 +38,7 @@ GROUPBY_EPILOG = """examples:
 
 def dataframe(args: argparse.Namespace):
     """Return the dataframe from the input file."""
-    return get_dataframe(args.input, args.hours_per_day, explode_tags=args.explode_tags)
+    return get_dataframe(args.input, args.hours_per_day, explode_tags=args.explode_tags, index=args.index)
 
 def default_func(args: argparse.Namespace):
     """Return the dataframe from the input file."""
@@ -46,8 +49,7 @@ def groupby_func(args: argparse.Namespace):
     """Return the grouped dataframe from the input file."""
     df = dataframe(args)
     by = args.by.capitalize()
-    # columns = [column for column in args.columns if column != by]
-    return df.groupby(by, sort=False).agg(aggregate_funcs(by))
+    return df.groupby(by, sort=False).agg(aggregate_funcs(df))
 
 def plot_func(args: argparse.Namespace):
     """Plot the dataframe."""
@@ -71,7 +73,8 @@ def get_parent_parser() -> argparse.ArgumentParser:
         default=sys.stdin,
     )
     parent_parser.add_argument(
-        "-c", "--columns",
+        "-c",
+        "--columns",
         help=f"columns to show (default is '{COLUMNS_DEFAULT}')",
         nargs="*",
         type=str.capitalize,
@@ -79,7 +82,8 @@ def get_parent_parser() -> argparse.ArgumentParser:
         choices=COLUMNS_CHOICES,
     )
     parent_parser.add_argument(
-        "-e", "--explode-tags",
+        "-e",
+        "--explode-tags",
         help=f"create a separate row for each tag (default is False)",
         action="store_true",
     )
@@ -116,6 +120,14 @@ def get_parser() -> tuple:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.set_defaults(func=default_func)
+    parser.add_argument(
+        "--index",
+        help=f"columns to use as dataframe indices (default is '{INDEX_DEFAULT}')",
+        nargs="+",
+        type=str.capitalize,
+        default=INDEX_DEFAULT,
+        choices=INDEX_CHOICES,
+    )
 
     # setup subparsers
     subparsers = {}
