@@ -85,7 +85,6 @@ def get_parser() -> tuple:
         default=sys.stdout,
     )
     parser.add_argument(
-        "-g",
         "--groupby",
         nargs="+",
         help="group by a column",
