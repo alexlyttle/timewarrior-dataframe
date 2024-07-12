@@ -15,8 +15,8 @@ FORMAT_DEFAULT = "table"
 COLUMNS_CHOICES = ["Tags", "Hours", "Days", "Duration", "Start", "End"]
 COLUMNS_DEFAULT = ["Tags", "Hours", "Days"]
 
-INDEX_DEFAULT = ["Week", "Date", "Weekday"]
-INDEX_CHOICES = ["Tags", "Date", "Week", "Weekday", "Start", "End"]
+INDEX_DEFAULT = ["Week", "Date", "Time"]
+INDEX_CHOICES = ["Week", "Date", "Time", "Weekday", "Tags", "Start", "End"]
 
 BY_CHOICES = ["Tags", "Date", "Week", "Weekday"]
 
@@ -48,131 +48,93 @@ def default_func(args: argparse.Namespace):
 def groupby_func(args: argparse.Namespace):
     """Return the grouped dataframe from the input file."""
     df = dataframe(args)
-    by = args.by.capitalize()
-    return df.groupby(by, sort=False).agg(aggregate_funcs(df))
+    return df.groupby(args.groupby, sort=False).agg(aggregate_funcs(df))
 
 def plot_func(args: argparse.Namespace):
     """Plot the dataframe."""
     raise NotImplementedError("Plotting is not yet implemented.")
+    
+def get_parser() -> tuple:
+    """Return the parser for the command line interface."""
 
-def get_parent_parser() -> argparse.ArgumentParser:
-    """Setup parent parser for common arguments."""
-    parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument(
-        "--format",
+    # setup main parser, inheriting from parent parser
+    parser = argparse.ArgumentParser(
+        description='output timewarrior data as a pandas dataframe',
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
         "-f",
+        "--format",
         help=f"dataframe output format (default is '{FORMAT_DEFAULT}')",
         default=FORMAT_DEFAULT,
         choices=FORMAT_CHOICES
     )
-    parent_parser.add_argument(
+    parser.add_argument(
         "-i",
         "--input",
         help="input file (default is system standard input)",
         type=argparse.FileType("r"),
         default=sys.stdin,
     )
-    parent_parser.add_argument(
+    parser.add_argument(
+        "-g",
+        "--groupby",
+        nargs="+",
+        help="group by a column",
+        type=str.capitalize,
+        choices=BY_CHOICES,
+    )
+    parser.add_argument(
         "-c",
         "--columns",
         help=f"columns to show (default is '{COLUMNS_DEFAULT}')",
-        nargs="*",
+        nargs="+",
         type=str.capitalize,
         default=COLUMNS_DEFAULT,
         choices=COLUMNS_CHOICES,
     )
-    parent_parser.add_argument(
-        "-e",
-        "--explode-tags",
-        help=f"create a separate row for each tag (default is False)",
-        action="store_true",
-    )
-    parent_parser.add_argument(
-        "--hours-per-day",
-        help=f"hours per day (default is {HOURS_PER_DAY_DEFAULT})",
-        type=float,
-        default=HOURS_PER_DAY_DEFAULT,
-    )
-    parent_parser.add_argument(
-        "--hours-format",
-        help=f"string format to display hours (default is '{HOURS_FORMAT_DEFAULT}')",
-        type=str,
-        default=HOURS_FORMAT_DEFAULT,
-    )
-    parent_parser.add_argument(
-        "--days-format",
-        help=f"string format to display days (default is '{DAYS_FORMAT_DEFAULT}')",
-        type=str,
-        default=DAYS_FORMAT_DEFAULT,
-    )
-    return parent_parser
-    
-def get_parser() -> tuple:
-    """Return the parser for the command line interface."""
-
-    parent_parser = get_parent_parser()
-
-    # setup main parser, inheriting from parent parser
-    parser = argparse.ArgumentParser(
-        description='output timewarrior data as a pandas dataframe',
-        parents=[parent_parser],
-        epilog=EPILOG,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.set_defaults(func=default_func)
     parser.add_argument(
         "--index",
-        help=f"columns to use as dataframe indices (default is '{INDEX_DEFAULT}')",
+        help=f"columns to use as dataframe indices (default is '{INDEX_DEFAULT}') - this is ineffective when using groupby",
         nargs="+",
         type=str.capitalize,
         default=INDEX_DEFAULT,
         choices=INDEX_CHOICES,
     )
-
-    # setup subparsers
-    subparsers = {}
-    _subparsers = parser.add_subparsers(help='sub-commands for data aggregation', dest="subcommand")
-
-    # groupby subcommand, inheriting from parent parser
-    subcommand = "groupby"
-    subparsers[subcommand] = groupby = _subparsers.add_parser(
-        subcommand,
-        description="group timewarrior data by a column",
-        help="group by a column",
-        parents=[parent_parser],
-        epilog=GROUPBY_EPILOG,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+    parser.add_argument(
+        "--explode-tags",
+        help=f"create a separate row for each tag (default is False)",
+        action="store_true",
     )
-    groupby.set_defaults(func=groupby_func)
-    groupby.add_argument(
-        "by",
-        help="column to group by",
-        type=str.capitalize,
-        choices=BY_CHOICES
+    parser.add_argument(
+        "--hours-per-day",
+        help=f"hours per day (default is {HOURS_PER_DAY_DEFAULT})",
+        type=float,
+        default=HOURS_PER_DAY_DEFAULT,
     )
-    
-    subcommand = "plot"
-    subparsers[subcommand] = plot = _subparsers.add_parser(
-        subcommand,
-        description="not yet implemented",
-        help="plot timewarrior data",
-        epilog=None,  # TODO
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+    parser.add_argument(
+        "--hours-format",
+        help=f"string format to display hours (default is '{HOURS_FORMAT_DEFAULT}')",
+        type=str,
+        default=HOURS_FORMAT_DEFAULT,
     )
-    plot.set_defaults(func=plot_func)
+    parser.add_argument(
+        "--days-format",
+        help=f"string format to display days (default is '{DAYS_FORMAT_DEFAULT}')",
+        type=str,
+        default=DAYS_FORMAT_DEFAULT,
+    )
 
-    return (parser, subparsers)
+    return parser
 
 def main_cli():
     """Run the command line interface."""
-    parser, subparsers = get_parser()
+    parser = get_parser()
     args = parser.parse_args(sys.argv[1:])
 
     if args.input.isatty():
-        if args.subcommand is None:
-            parser.print_usage()
-        else:
-            subparsers[args.subcommand].print_usage()
+        parser.print_usage()
         print(
             "twdf: error: system stdin must piped or the following argument is required: --input",
             file=sys.stderr
@@ -180,15 +142,14 @@ def main_cli():
         return None
 
     # get the dataframe
-    df = args.func(args)
+    if args.groupby:
+        df = groupby_func(args)
+    else:
+        df = default_func(args)
     
     # get columns to display
-    columns = []
-    for column in args.columns:
-        if (c := column.capitalize()) in df.columns:
-            # e.g. if the groupby column is in the columns list then it becomes and index
-            columns.append(c)
-        # else quietly do nothing, as args.columns are validated
+    columns = [column for column in args.columns if column in df.columns]
+    # else quietly do nothing, as args.columns are validated
 
     print(
         format_dataframe(
