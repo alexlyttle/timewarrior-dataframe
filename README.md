@@ -57,5 +57,5 @@ twdf --input report.json
 Group the table by tags, date, or week with the `groupby` subcommand, e.g.
 
 ```bash
-timew export | twdf groupby tags
+timew export | twdf --groupby tags
 ```
