@@ -8,7 +8,7 @@ def format_dataframe(df: pd.DataFrame, fmt: str, hours_format: str, days_format:
         "Days": f"{{:{days_format}}}".format,
     }
     if fmt == "csv":
-        return df.to_csv(columns=columns)
+        return df[columns].to_csv()
     elif fmt == "table":
         return df.to_string(formatters=formatters, columns=columns)
     else:
