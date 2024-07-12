@@ -1,3 +1,4 @@
+import io
 import sys
 import argparse
 
@@ -42,7 +43,6 @@ def dataframe(args: argparse.Namespace):
 
 def default_func(args: argparse.Namespace):
     """Return the dataframe from the input file."""
-    # columns = args.columns
     return dataframe(args)
 
 def groupby_func(args: argparse.Namespace):
@@ -78,6 +78,13 @@ def get_parser() -> tuple:
         default=sys.stdin,
     )
     parser.add_argument(
+        "-o",
+        "--output",
+        help="output file (default is system standard output)",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+    )
+    parser.add_argument(
         "-g",
         "--groupby",
         nargs="+",
@@ -86,7 +93,6 @@ def get_parser() -> tuple:
         choices=BY_CHOICES,
     )
     parser.add_argument(
-        "-c",
         "--columns",
         help=f"columns to show (default is '{COLUMNS_DEFAULT}')",
         nargs="+",
@@ -151,12 +157,14 @@ def main_cli():
     columns = [column for column in args.columns if column in df.columns]
     # else quietly do nothing, as args.columns are validated
 
-    print(
-        format_dataframe(
-            df,
-            fmt=args.format,
-            hours_format=args.hours_format,
-            days_format=args.days_format,
-            columns=columns,
+    with args.output as file:
+        file.write(
+            format_dataframe(
+                df,
+                fmt=args.format,
+                hours_format=args.hours_format,
+                days_format=args.days_format,
+                columns=columns,
+            )
         )
-    )
+        file.write("\n")  # write new line at end of file

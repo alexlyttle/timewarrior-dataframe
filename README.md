@@ -34,6 +34,14 @@ Choose between table (default) or CSV format with the `--format` option, e.g.
 timew export | twdf --format csv
 ```
 
+### Groupby
+
+Group the table by tags, date, or week with the `groupby` subcommand, e.g.
+
+```bash
+timew export | twdf --groupby tags
+```
+
 ### Input
 
 By default, the `twdf` command expects input JSON data from the system standard input (e.g. using the `|` operator).
@@ -52,10 +60,11 @@ twdf < report.json
 twdf --input report.json
 ```
 
-### Groupby
+### Output
 
-Group the table by tags, date, or week with the `groupby` subcommand, e.g.
+By default, the `twdf` command outputs to the system standard output. You can override this by either sending system output to a file, or using the `--output` option, e.g.
 
 ```bash
-timew export | twdf --groupby tags
+timew export | twdf > report.out
+timew export | twdf --output report.out
 ```
