@@ -1,10 +1,10 @@
-def join_tags(tags: list[str]) -> str:
+def join_tags(tags: list[str], delimiter: str=", ") -> str:
     """Join tags into a single string."""
     individual_tags = []
     for t in tags:
-        individual_tags += t.split(", ")
+        individual_tags += t.split(delimiter)
 
-    return ", ".join(set(individual_tags))
+    return delimiter.join(set(individual_tags))
 
 def aggregate_funcs(by: str) -> dict:
     """Get aggregation functions for groupby column."""
