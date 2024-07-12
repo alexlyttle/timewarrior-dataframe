@@ -34,8 +34,16 @@ def create_dataframe(data: dict) -> pd.DataFrame:
     df = df.set_index(["Week", "Date", "Weekday"], drop=True)
     return df
 
-def get_dataframe(input_stream: TextIO, hours_per_day: float) -> pd.DataFrame:
+def explode(df: pd.DataFrame, column: str, delimiter: str=", ") -> pd.DataFrame:
+    """Explode a column with comma separated values."""
+    exploded_tags = df[column].str.split(delimiter).explode()
+    return df.drop(columns=column).join(exploded_tags)
+    
+def get_dataframe(input_stream: TextIO, hours_per_day: float, explode_tags: bool=False) -> pd.DataFrame:
     """Get a pandas DataFrame from the system standard input."""
     intervals = get_intervals(input_stream)
     data = get_data(intervals, hours_per_day)
-    return create_dataframe(data)
+    df = create_dataframe(data)
+    if explode_tags:
+        df = explode(df, "Tags")
+    return df
