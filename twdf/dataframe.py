@@ -1,6 +1,7 @@
 import pandas as pd
 from timewreport.parser import TimeWarriorParser, TimeWarriorInterval
 from typing import TextIO
+from collections import defaultdict
 
 seconds_per_hour = 3600
 
@@ -10,17 +11,16 @@ def get_intervals(input_stream: TextIO) -> list[TimeWarriorInterval]:
 
 def get_data(intervals: list[TimeWarriorInterval], hours_per_day: float) -> dict:
     """Get data from the Timewarrior intervals."""    
-    data = dict(
-        Date=[],
-        Tags=[],
-        Hours=[],
-        Days=[]
-    )
-    
+    data = defaultdict(list)
+
     for interval in intervals:
         data["Date"].append(interval.get_start_date())
-        data["Tags"].append(", ".join(interval.get_tags())) 
+        data["Tags"].append(", ".join(interval.get_tags()))
+        data["Start"].append(interval.get_start())
+        data["End"].append(interval.get_end())
+        
         duration = interval.get_duration()
+        data["Duration"].append(duration)
         data["Hours"].append(duration.seconds / seconds_per_hour)
         data["Days"].append(duration.seconds / seconds_per_hour / hours_per_day) 
     

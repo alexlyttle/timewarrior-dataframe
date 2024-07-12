@@ -12,7 +12,7 @@ DAYS_FORMAT_DEFAULT = ".3f"
 FORMAT_CHOICES = ["table", "csv"]
 FORMAT_DEFAULT = "table"
 
-COLUMNS_CHOICES = ["Tags", "Hours", "Days"]
+COLUMNS_CHOICES = ["Tags", "Hours", "Days", "Duration", "Start", "End"]
 COLUMNS_DEFAULT = ["Tags", "Hours", "Days"]
 
 BY_CHOICES = ["Tags", "Date", "Week", "Weekday"]
