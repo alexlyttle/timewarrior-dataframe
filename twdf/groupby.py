@@ -1,3 +1,5 @@
+import pandas as pd
+
 DEFAULT_FUNCS = {
     "Hours": "sum",
     "Days": "sum",
@@ -14,11 +16,7 @@ def join_tags(tags: list[str], delimiter: str=", ") -> str:
 
     return delimiter.join(set(individual_tags))
 
-def aggregate_funcs(by: str) -> dict:
+def aggregate_funcs(df: pd.DataFrame) -> dict:
     """Get aggregation functions for groupby column."""
-    funcs = DEFAULT_FUNCS
-
-    if by != "Tags":
-        funcs["Tags"] = join_tags
-
-    return funcs
+    # quietly ignore columns not in the dataframe
+    return {key: value for key, value in DEFAULT_FUNCS.items() if key in df.columns}
