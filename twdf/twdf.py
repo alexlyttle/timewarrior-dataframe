@@ -12,6 +12,9 @@ DAYS_FORMAT_DEFAULT = ".3f"
 FORMAT_CHOICES = ["table", "csv"]
 FORMAT_DEFAULT = "table"
 
+COLUMNS_CHOICES = ["tags", "hours", "days"]
+COLUMNS_DEFAULT = ["tags", "hours", "days"]
+
 BY_CHOICES = ["tags", "date", "week", "weekday"]
 
 EPILOG = """examples:
@@ -30,14 +33,19 @@ GROUPBY_EPILOG = """examples:
   timew export | twdf groupby tags   # print dataframe grouped by tags
 """
 
+def dataframe(args):
+    return get_dataframe(args.input, args.hours_per_day, explode_tags=args.explode_tags)
+
 def default_func(args):
     """Return the dataframe from the input file."""
-    return get_dataframe(args.input, args.hours_per_day)
+    # columns = args.columns
+    return dataframe(args)
 
 def groupby_func(args):
     """Return the grouped dataframe from the input file."""
-    df = get_dataframe(args.input, args.hours_per_day)
+    df = dataframe(args)
     by = args.by.capitalize()
+    # columns = [column for column in args.columns if column != by]
     return df.groupby(by, sort=False).agg(aggregate_funcs(by))
 
 def get_parser() -> argparse.ArgumentParser:
@@ -53,10 +61,24 @@ def get_parser() -> argparse.ArgumentParser:
         choices=FORMAT_CHOICES
     )
     parent_parser.add_argument(
+        "-i",
         "--input",
         help="input file (default is system standard input)",
         type=argparse.FileType("r"),
         default=sys.stdin,
+    )
+    parent_parser.add_argument(
+        "-c", "--columns",
+        help=f"columns to show (default is '{COLUMNS_DEFAULT}')",
+        nargs="+",
+        type=str,
+        default=COLUMNS_DEFAULT,
+        choices=COLUMNS_CHOICES,
+    )
+    parent_parser.add_argument(
+        "-e", "--explode-tags",
+        help=f"explode tags",
+        action="store_true",
     )
     parent_parser.add_argument(
         "--hours-per-day",
@@ -102,7 +124,6 @@ def get_parser() -> argparse.ArgumentParser:
     )
     groupby.set_defaults(func=groupby_func)
     groupby.add_argument("by", help="column to group by", choices=BY_CHOICES)
-    groupby.add_argument("--hide-tags", help="hide tags in the output", action="store_true")
 
     return (parser, subparsers)
 
@@ -122,10 +143,20 @@ def main_cli():
         )
         return None
 
+    # get the dataframe
     df = args.func(args)
+    
+    # get columns to display
+    columns = []
+    for column in args.columns:
+        if (c := column.capitalize()) in df.columns:
+            # e.g. if the groupby column is in the columns list then it becomes and index
+            columns.append(c)
+        # else quietly do nothing, as args.columns are validated
+
     print(
         format_dataframe(
-            df,
+            df[columns],
             fmt=args.format,
             hours_format=args.hours_format,
             days_format=args.days_format,
