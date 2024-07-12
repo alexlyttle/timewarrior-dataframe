@@ -138,6 +138,16 @@ def get_parser() -> tuple:
         type=str.capitalize,
         choices=BY_CHOICES
     )
+    
+    subcommand = "plot"
+    subparsers[subcommand] = plot = _subparsers.add_parser(
+        subcommand,
+        description="not yet implemented",
+        help="plot timewarrior data",
+        epilog=None,  # TODO
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    plot.set_defaults(func=plot_func)
 
     return (parser, subparsers)
 
