@@ -8,36 +8,14 @@ def join_tags(tags: list[str], delimiter: str=", ") -> str:
 
 def aggregate_funcs(by: str) -> dict:
     """Get aggregation functions for groupby column."""
-    funcs = {}
-    
-    if by == "Tags":
-        funcs = {
-            "Hours": "sum",
-            "Days": "sum"
-        }
-    
-    elif by == "Date":
-        funcs = {
-            "Tags": join_tags,
-            "Hours": "sum",
-            "Days": "sum"
-        }
-    
-    elif by == "Week":
-        funcs = {
-            "Tags": join_tags,
-            "Hours": "sum",
-            "Days": "sum"
-        }
-    
-    elif by == "Weekday":
-        funcs = {
-            "Tags": join_tags,
-            "Hours": "sum",
-            "Days": "sum"
-        }
+    funcs = {
+        "Hours": "sum",
+        "Days": "sum"
+    }    
 
-    else:
+    if by in {"Date", "Week", "Weekday"}:
+        funcs["Tags"] = join_tags,
+    elif by != "Tags":
         raise ValueError("Unknown groupby column.")
-    
+
     return funcs
