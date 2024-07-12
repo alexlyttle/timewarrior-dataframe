@@ -12,10 +12,10 @@ DAYS_FORMAT_DEFAULT = ".3f"
 FORMAT_CHOICES = ["table", "csv"]
 FORMAT_DEFAULT = "table"
 
-COLUMNS_CHOICES = ["tags", "hours", "days"]
-COLUMNS_DEFAULT = ["tags", "hours", "days"]
+COLUMNS_CHOICES = ["Tags", "Hours", "Days"]
+COLUMNS_DEFAULT = ["Tags", "Hours", "Days"]
 
-BY_CHOICES = ["tags", "date", "week", "weekday"]
+BY_CHOICES = ["Tags", "Date", "Week", "Weekday"]
 
 EPILOG = """examples:
   timew export | twdf               # print dataframe for all timewarrior data
@@ -49,6 +49,10 @@ def groupby_func(args: argparse.Namespace):
     # columns = [column for column in args.columns if column != by]
     return df.groupby(by, sort=False).agg(aggregate_funcs(by))
 
+def plot_func(args: argparse.Namespace):
+    """Plot the dataframe."""
+    raise NotImplementedError("Plotting is not yet implemented.")
+
 def get_parent_parser() -> argparse.ArgumentParser:
     """Setup parent parser for common arguments."""
     parent_parser = argparse.ArgumentParser(add_help=False)
@@ -70,7 +74,7 @@ def get_parent_parser() -> argparse.ArgumentParser:
         "-c", "--columns",
         help=f"columns to show (default is '{COLUMNS_DEFAULT}')",
         nargs="*",
-        type=str,
+        type=str.capitalize,
         default=COLUMNS_DEFAULT,
         choices=COLUMNS_CHOICES,
     )
@@ -128,7 +132,12 @@ def get_parser() -> tuple:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     groupby.set_defaults(func=groupby_func)
-    groupby.add_argument("by", help="column to group by", choices=BY_CHOICES)
+    groupby.add_argument(
+        "by",
+        help="column to group by",
+        type=str.capitalize,
+        choices=BY_CHOICES
+    )
 
     return (parser, subparsers)
 
@@ -161,9 +170,10 @@ def main_cli():
 
     print(
         format_dataframe(
-            df[columns],
+            df,
             fmt=args.format,
             hours_format=args.hours_format,
             days_format=args.days_format,
+            columns=columns,
         )
     )
