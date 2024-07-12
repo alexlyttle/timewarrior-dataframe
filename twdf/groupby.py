@@ -5,7 +5,10 @@ DEFAULT_FUNCS = {
     "Days": "sum",
     "Duration": "sum",
     "Start": "min",
-    "End": "max"
+    "End": "max",
+    "Date": "first",
+    "Week": "first",
+    "Weekday": "first",
 }
 
 def join_tags(tags: list[str], delimiter: str=", ") -> str:
