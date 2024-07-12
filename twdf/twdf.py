@@ -33,25 +33,24 @@ GROUPBY_EPILOG = """examples:
   timew export | twdf groupby tags   # print dataframe grouped by tags
 """
 
-def dataframe(args):
+def dataframe(args: argparse.Namespace):
+    """Return the dataframe from the input file."""
     return get_dataframe(args.input, args.hours_per_day, explode_tags=args.explode_tags)
 
-def default_func(args):
+def default_func(args: argparse.Namespace):
     """Return the dataframe from the input file."""
     # columns = args.columns
     return dataframe(args)
 
-def groupby_func(args):
+def groupby_func(args: argparse.Namespace):
     """Return the grouped dataframe from the input file."""
     df = dataframe(args)
     by = args.by.capitalize()
     # columns = [column for column in args.columns if column != by]
     return df.groupby(by, sort=False).agg(aggregate_funcs(by))
 
-def get_parser() -> argparse.ArgumentParser:
-    """Return the parser for the command line interface."""
-
-    # setup parent parser for common arguments
+def get_parent_parser() -> argparse.ArgumentParser:
+    """Setup parent parser for common arguments."""
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument(
         "--format",
@@ -70,14 +69,14 @@ def get_parser() -> argparse.ArgumentParser:
     parent_parser.add_argument(
         "-c", "--columns",
         help=f"columns to show (default is '{COLUMNS_DEFAULT}')",
-        nargs="+",
+        nargs="*",
         type=str,
         default=COLUMNS_DEFAULT,
         choices=COLUMNS_CHOICES,
     )
     parent_parser.add_argument(
         "-e", "--explode-tags",
-        help=f"explode tags",
+        help=f"create a separate row for each tag (default is False)",
         action="store_true",
     )
     parent_parser.add_argument(
@@ -98,6 +97,12 @@ def get_parser() -> argparse.ArgumentParser:
         type=str,
         default=DAYS_FORMAT_DEFAULT,
     )
+    return parent_parser
+    
+def get_parser() -> tuple:
+    """Return the parser for the command line interface."""
+
+    parent_parser = get_parent_parser()
 
     # setup main parser, inheriting from parent parser
     parser = argparse.ArgumentParser(
