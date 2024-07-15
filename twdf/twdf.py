@@ -3,7 +3,7 @@ import sys
 import argparse
 
 from .dataframe import get_dataframe
-from .groupby import aggregate_funcs
+from .groupby import join_tags
 from .formatter import format_dataframe
 
 HOURS_PER_DAY_DEFAULT = 7.5
@@ -13,13 +13,27 @@ DAYS_FORMAT_DEFAULT = ".3f"
 FORMAT_CHOICES = ["table", "csv"]
 FORMAT_DEFAULT = "table"
 
-COLUMNS_CHOICES = ["Tags", "Hours", "Days", "Duration", "Start", "End"]
+COLUMNS = ["Tags", "Hours", "Days", "Duration", "Start", "End", "Date", "Time", "Week", "Weekday"]
+
+COLUMNS_CHOICES = COLUMNS
 COLUMNS_DEFAULT = ["Tags", "Hours", "Days"]
 
+INDEX_CHOICES = COLUMNS
 INDEX_DEFAULT = ["Week", "Date", "Time"]
-INDEX_CHOICES = ["Week", "Date", "Time", "Weekday", "Tags", "Start", "End"]
 
-BY_CHOICES = ["Tags", "Date", "Week", "Weekday"]
+BY_CHOICES = COLUMNS
+
+DEFAULT_AGG = {
+    "Hours": "sum",
+    "Days": "sum",
+    "Duration": "sum",
+    "Start": "min",
+    "End": "max",
+    "Date": ["first", "last"],
+    "Week": "first",
+    "Weekday": "first",
+    "Tags": join_tags,
+}
 
 EPILOG = """examples:
   timew export | twdf               # print dataframe for all timewarrior data
@@ -48,7 +62,8 @@ def default_func(args: argparse.Namespace):
 def groupby_func(args: argparse.Namespace):
     """Return the grouped dataframe from the input file."""
     df = dataframe(args)
-    return df.groupby(args.groupby, sort=False).agg(aggregate_funcs(df, args.groupby))
+    by = [df[key] for key in args.groupby]  # be explicit to ensure no index/column ambiguity
+    return df.groupby(by, sort=False).agg(args.agg)
 
 def plot_func(args: argparse.Namespace):
     """Plot the dataframe."""
@@ -130,6 +145,13 @@ def get_parser() -> tuple:
         type=str,
         default=DAYS_FORMAT_DEFAULT,
     )
+    parser.add_argument(
+        "--sort",
+        help="sort the dataframe index",
+        action="store_true",
+    )
+    parser.set_defaults(sort=False)
+    parser.set_defaults(agg=DEFAULT_AGG)
 
     return parser
 
@@ -148,12 +170,17 @@ def main_cli():
 
     # get the dataframe
     if args.groupby:
+        # Assume you never want to display groupby columns
+        args.columns = list(set(args.columns) - set(args.groupby))
         df = groupby_func(args)
     else:
         df = default_func(args)
     
+    if args.sort:
+        df = df.sort_index()
+
     # get columns to display
-    columns = [column for column in args.columns if column in df.columns]
+    # columns = [column for column in args.columns if column in df.columns]
     # else quietly do nothing, as args.columns are validated
 
     with args.output as file:
@@ -163,7 +190,7 @@ def main_cli():
                 fmt=args.format,
                 hours_format=args.hours_format,
                 days_format=args.days_format,
-                columns=columns,
+                columns=args.columns,
             )
         )
         file.write("\n")  # write new line at end of file
