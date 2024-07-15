@@ -46,7 +46,7 @@ def create_dataframe(data: dict, explode_tags: bool=False, index: Optional[list]
     if explode_tags:
         df = explode(df, "Tags")
     if index is not None:
-        df = df.set_index(index, drop=True)
+        df = df.set_index(index, drop=False)
     return df
     
 def get_dataframe(input_stream: TextIO, hours_per_day: float, explode_tags: bool=False, index: Optional[list]=None) -> pd.DataFrame:
