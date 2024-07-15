@@ -48,7 +48,7 @@ def default_func(args: argparse.Namespace):
 def groupby_func(args: argparse.Namespace):
     """Return the grouped dataframe from the input file."""
     df = dataframe(args)
-    return df.groupby(args.groupby, sort=False).agg(aggregate_funcs(df))
+    return df.groupby(args.groupby, sort=False).agg(aggregate_funcs(df, args.groupby))
 
 def plot_func(args: argparse.Namespace):
     """Plot the dataframe."""
