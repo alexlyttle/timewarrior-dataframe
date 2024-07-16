@@ -153,6 +153,7 @@ def get_parser() -> tuple:
     )
     parser.set_defaults(sort=False)
     parser.set_defaults(agg=DEFAULT_AGG)
+    parser.set_defaults(line_width="auto")
 
     return parser
 
@@ -183,8 +184,9 @@ def main_cli():
     # get columns to display
     # columns = [column for column in args.columns if column in df.columns]
     # else quietly do nothing, as args.columns are validated
-    terminal_size = shutil.get_terminal_size()
-    line_width = terminal_size.columns if terminal_size.columns > 0 else None
+    if args.line_width == "auto":
+        terminal_size = shutil.get_terminal_size(fallback=(0, 0))
+        args.line_width = terminal_size.columns if terminal_size.columns > 0 else None
 
     with args.output as file:
         file.write(
@@ -194,7 +196,7 @@ def main_cli():
                 hours_format=args.hours_format,
                 days_format=args.days_format,
                 columns=args.columns,
-                line_width=line_width,
+                line_width=args.line_width,
             )
         )
         file.write("\n")  # write new line at end of file
