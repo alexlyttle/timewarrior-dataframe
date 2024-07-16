@@ -1,5 +1,6 @@
 import io
 import sys
+import shutil
 import argparse
 
 from .dataframe import get_dataframe
@@ -182,6 +183,8 @@ def main_cli():
     # get columns to display
     # columns = [column for column in args.columns if column in df.columns]
     # else quietly do nothing, as args.columns are validated
+    terminal_size = shutil.get_terminal_size()
+    line_width = terminal_size.columns if terminal_size.columns > 0 else None
 
     with args.output as file:
         file.write(
@@ -191,6 +194,7 @@ def main_cli():
                 hours_format=args.hours_format,
                 days_format=args.days_format,
                 columns=args.columns,
+                line_width=line_width,
             )
         )
         file.write("\n")  # write new line at end of file
